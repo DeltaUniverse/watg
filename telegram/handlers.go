@@ -240,7 +240,7 @@ func StartCommandHandler(b *gotgbot.Bot, c *ext.Context) error {
 	if len(state.State.Modules) > 0 {
 		startMessage += "• <b>Loaded Modules</b>:\n"
 		for _, module := range state.State.Modules {
-			startMessage += fmt.Sprintf("  - <i>%s</i>\n", html.EscapeString(module))
+			startMessage += fmt.Sprintf("  - <b>%s</b>\n", html.EscapeString(module))
 		}
 	} else {
 		startMessage += "• No Modules Loaded\n"
@@ -307,7 +307,7 @@ func FindContactHandler(b *gotgbot.Bot, c *ext.Context) error {
 
 	outputString := fmt.Sprintf("Here are the %v matching contacts:\n\n", resultsCount)
 	for jid, name := range results {
-		outputString += fmt.Sprintf("- <i>%s</i> [ <code>%s</code> ]\n",
+		outputString += fmt.Sprintf("- <b>%s</b> [ <code>%s</code> ]\n",
 			html.EscapeString(name), html.EscapeString(jid))
 
 		if len(outputString) >= 1800 {
@@ -459,7 +459,7 @@ func JoinInviteLinkHandler(b *gotgbot.Bot, c *ext.Context) error {
 
 	waClient := state.State.WhatsAppClient
 
-	groupID, err := waClient.JoinGroupWithLink(inviteLink)
+	groupID, err := waClient.JoinGroupWithLink(context.Background(), inviteLink)
 	if err != nil {
 		return utils.TgReplyWithErrorByContext(b, c, "Failed to join", err)
 	}
@@ -494,7 +494,7 @@ func SetTargetGroupChatHandler(b *gotgbot.Bot, c *ext.Context) error {
 	)
 
 	groupJID, _ := utils.WaParseJID(groupID)
-	groupInfo, err := waClient.GetGroupInfo(groupJID)
+	groupInfo, err := waClient.GetGroupInfo(context.Background(), groupJID)
 	if err != nil {
 		return utils.TgReplyWithErrorByContext(b, c, "Failed to get group info", err)
 	}
@@ -574,7 +574,7 @@ func handleBlockUnblockUser(b *gotgbot.Bot, c *ext.Context, action events.Blockl
 		return err
 	}
 	jid, _ := utils.WaParseJID(waChatId)
-	_, err = state.State.WhatsAppClient.UpdateBlocklist(jid, action)
+	_, err = state.State.WhatsAppClient.UpdateBlocklist(context.Background(), jid, action)
 	if err != nil {
 		err = utils.TgReplyWithErrorByContext(b, c, "Failed to change the blocklist status", err)
 		return err
@@ -659,7 +659,7 @@ func GetProfilePictureHandler(b *gotgbot.Bot, c *ext.Context) error {
 
 	userJID, _ := utils.WaParseJID(userID)
 
-	ppInfo, err := waClient.GetProfilePictureInfo(userJID, &whatsmeow.GetProfilePictureParams{})
+	ppInfo, err := waClient.GetProfilePictureInfo(context.Background(), userJID, &whatsmeow.GetProfilePictureParams{})
 	if err != nil {
 		return utils.TgReplyWithErrorByContext(b, c, "Failed to fetch profile picture info from WhatsApp", err)
 	}
@@ -807,7 +807,7 @@ func RevokeCommandHandler(b *gotgbot.Bot, c *ext.Context) error {
 		return utils.TgReplyWithErrorByContext(b, c, "failed to revoke message", err)
 	}
 
-	_, err = utils.TgReplyTextByContext(b, c, "<i>Successfully revoked</i>", nil, false)
+	_, err = utils.TgReplyTextByContext(b, c, "<b>Successfully revoked</b>", nil, false)
 	return err
 }
 
@@ -871,7 +871,7 @@ func RevokeCallbackHandler(b *gotgbot.Bot, c *ext.Context) error {
 					ShowAlert: true,
 					CacheTime: 60,
 				})
-				b.EditMessageText("<i>Revoked</i>", &gotgbot.EditMessageTextOpts{
+				b.EditMessageText("<b>Revoked</b>", &gotgbot.EditMessageTextOpts{
 					ChatId:    c.EffectiveChat.Id,
 					MessageId: c.EffectiveMessage.MessageId,
 					ReplyMarkup: gotgbot.InlineKeyboardMarkup{
